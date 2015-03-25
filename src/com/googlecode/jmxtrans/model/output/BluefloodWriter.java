@@ -42,7 +42,7 @@ public class BluefloodWriter extends BaseOutputWriter {
 	@JsonCreator
 	public BluefloodWriter(@JsonProperty("typeNames") ImmutableList<String> typeNames, @JsonProperty("booleanAsNumber") boolean booleanAsNumber,
 			@JsonProperty("debug") Boolean debugEnabled, @JsonProperty("host") String host, @JsonProperty("port") Integer port,
-			@JsonProperty("ttl") int ttl, @JsonProperty("settings") Map<String, Object> settings) {
+			@JsonProperty("ttl") Integer ttl, @JsonProperty("settings") Map<String, Object> settings) {
 		super(typeNames, booleanAsNumber, debugEnabled, settings);
 
 		this.host = MoreObjects.firstNonNull(host, (String) getSettings().get(HOST));
@@ -56,9 +56,7 @@ public class BluefloodWriter extends BaseOutputWriter {
 			throw new NullPointerException("Port cannot be null.");
 		}
 
-		// this.ttl = MoreObjects.firstNonNull(ttl,
-		// Settings.getIntSetting(getSettings(), TTL, DEFAULT_TTL));
-		this.ttl = DEFAULT_TTL;
+		this.ttl = MoreObjects.firstNonNull(ttl, DEFAULT_TTL);
 	}
 
 	public Integer getPort() {
