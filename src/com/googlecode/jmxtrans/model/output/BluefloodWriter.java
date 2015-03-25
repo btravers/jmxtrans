@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -24,6 +25,7 @@ import com.googlecode.jmxtrans.model.Result;
 import com.googlecode.jmxtrans.model.Server;
 import com.googlecode.jmxtrans.model.ValidationException;
 import com.googlecode.jmxtrans.model.naming.KeyUtils;
+import com.googlecode.jmxtrans.model.output.GraphiteWriter.Builder;
 
 @NotThreadSafe
 public class BluefloodWriter extends BaseOutputWriter {
@@ -136,4 +138,64 @@ public class BluefloodWriter extends BaseOutputWriter {
 		}
 	}
 
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static final class Builder {
+		private final ImmutableList.Builder<String> typeNames = ImmutableList.builder();
+		private boolean booleanAsNumber;
+		private Boolean debugEnabled;
+		private String rootPrefix;
+		private String host;
+		private Integer port;
+		private Integer ttl;
+
+		private Builder() {
+		}
+
+		public Builder addTypeNames(List<String> typeNames) {
+			this.typeNames.addAll(typeNames);
+			return this;
+		}
+
+		public Builder addTypeName(String typeName) {
+			typeNames.add(typeName);
+			return this;
+		}
+
+		public Builder setBooleanAsNumber(boolean booleanAsNumber) {
+			this.booleanAsNumber = booleanAsNumber;
+			return this;
+		}
+
+		public Builder setDebugEnabled(boolean debugEnabled) {
+			this.debugEnabled = debugEnabled;
+			return this;
+		}
+
+		public Builder setRootPrefix(String rootPrefix) {
+			this.rootPrefix = rootPrefix;
+			return this;
+		}
+
+		public Builder setHost(String host) {
+			this.host = host;
+			return this;
+		}
+
+		public Builder setPort(int port) {
+			this.port = port;
+			return this;
+		}
+
+		public Builder setTtl(int ttl) {
+			this.ttl = ttl;
+			return this;
+		}
+
+		public BluefloodWriter build() {
+			return new BluefloodWriter(typeNames.build(), booleanAsNumber, debugEnabled, host, port, ttl, null);
+		}
+	}
 }
