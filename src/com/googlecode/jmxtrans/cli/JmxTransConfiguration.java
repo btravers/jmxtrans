@@ -7,6 +7,7 @@ import java.util.List;
 
 public class JmxTransConfiguration {
 	private boolean continueOnJsonError = false;
+	private boolean useElasticsearch = false;
 	private File jsonDirOrFile;
 	private boolean runEndlessly = false;
 	/**
@@ -30,6 +31,18 @@ public class JmxTransConfiguration {
 	 */
 	public void setContinueOnJsonError(boolean continueOnJsonError) {
 		this.continueOnJsonError = continueOnJsonError;
+	}
+	
+	
+	/**
+	 * If it id false, then JmxTrans will load JSON configuration file from 
+	 * the specify directory. Otherwise, it will useelasticsearch to store 
+	 * JSON configuration files.
+	 * 
+	 * @param useElasticsearch
+	 */
+	public void setUseElasticsearch(boolean useElasticsearch) {
+		this.useElasticsearch = useElasticsearch;
 	}
 
 	/**
@@ -76,6 +89,10 @@ public class JmxTransConfiguration {
 	 */
 	public File getJsonDirOrFile() {
 		return jsonDirOrFile;
+	}
+	
+	public boolean getUseElasticsearch() {
+		return useElasticsearch;
 	}
 
 	public boolean isRunEndlessly() {

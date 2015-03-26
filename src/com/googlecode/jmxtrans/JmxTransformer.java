@@ -7,6 +7,8 @@ import com.google.inject.Injector;
 import com.googlecode.jmxtrans.classloader.ClassLoaderEnricher;
 import com.googlecode.jmxtrans.cli.CliArgumentParser;
 import com.googlecode.jmxtrans.cli.JmxTransConfiguration;
+import com.googlecode.jmxtrans.elasticsearch.ElasticsearchCallback;
+import com.googlecode.jmxtrans.elasticsearch.ElasticsearchClient;
 import com.googlecode.jmxtrans.exceptions.LifecycleException;
 import com.googlecode.jmxtrans.guice.JmxTransModule;
 import com.googlecode.jmxtrans.jobs.ServerJob;
@@ -17,7 +19,9 @@ import com.googlecode.jmxtrans.model.Server;
 import com.googlecode.jmxtrans.model.ValidationException;
 import com.googlecode.jmxtrans.util.WatchDir;
 import com.googlecode.jmxtrans.util.WatchedCallback;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.quartz.CronExpression;
@@ -33,7 +37,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.management.MBeanServer;
+
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -47,7 +53,7 @@ import java.util.List;
  *
  * @author jon
  */
-public class JmxTransformer implements WatchedCallback {
+public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 
 	private static final Logger log = LoggerFactory.getLogger(JmxTransformer.class);
 
@@ -60,6 +66,8 @@ public class JmxTransformer implements WatchedCallback {
 	private final Injector injector;
 
 	private WatchDir watcher;
+	
+	private ElasticsearchClient esClient;
 
 	private ImmutableList<Server> masterServersList = ImmutableList.of();
 
@@ -76,6 +84,8 @@ public class JmxTransformer implements WatchedCallback {
 		this.configuration = configuration;
 		this.configurationParser = configurationParser;
 		this.injector = injector;
+		
+		this.esClient = new ElasticsearchClient();
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -137,9 +147,11 @@ public class JmxTransformer implements WatchedCallback {
 			try {
 				this.serverScheduler.start();
 
-				this.startupWatchdir();
-
 				this.startupSystem();
+				
+				if (!this.configuration.getUseElasticsearch()) {
+					this.startupWatchdir();
+				}
 
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
@@ -274,7 +286,16 @@ public class JmxTransformer implements WatchedCallback {
 	 */
 	private void startupSystem() throws LifecycleException {
 		// process all the json files into Server objects
-		this.processFilesIntoServers();
+		if (this.configuration.getUseElasticsearch()) {
+			this.stopWriterAndClearMasterServerList();
+			try {
+				this.masterServersList = this.esClient.getAll();
+			} catch (Exception e) {
+				throw new LifecycleException(e.getMessage());
+			}
+		} else {
+			this.processFilesIntoServers();
+		}
 
 		// process the servers into jobs
 		this.processServersIntoJobs();
@@ -468,5 +489,26 @@ public class JmxTransformer implements WatchedCallback {
 				log.error("Error shutdown hook", e);
 			}
 		}
+	}
+
+	@Override
+	public void serverModified(int id) throws Exception {
+		Thread.sleep(1000);
+		this.deleteAllJobs();
+		this.startupSystem();
+	}
+
+	@Override
+	public void serverDeleted(int id) throws Exception {
+		Thread.sleep(1000);
+		this.deleteAllJobs();
+		this.startupSystem();
+	}
+
+	@Override
+	public void serverAdded(int id) throws Exception {
+		Thread.sleep(1000);
+		this.deleteAllJobs();
+		this.startupSystem();
 	}
 }

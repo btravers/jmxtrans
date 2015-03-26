@@ -27,7 +27,12 @@ public class CliArgumentParser {
 		for (Option option : options) {
 			if (option.getOpt().equals("c")) {
 				configuration.setContinueOnJsonError(Boolean.parseBoolean(option.getValue()));
+			} else if (option.getOpt().equals("es")) {
+				configuration.setUseElasticsearch(true);
 			} else if (option.getOpt().equals("j")) {
+				if (configuration.getUseElasticsearch()) {
+					throw new OptionsException("Incompatible options. Cannot use Elasticsearch and specify json directory.");
+				}
 				File jsonDir = new File(option.getValue());
 				if (jsonDir.exists() && jsonDir.isDirectory()) {
 					configuration.setJsonDirOrFile(jsonDir);
@@ -35,6 +40,9 @@ public class CliArgumentParser {
 					throw new OptionsException("Path to json directory is invalid: " + jsonDir);
 				}
 			} else if (option.getOpt().equals("f")) {
+				if (configuration.getUseElasticsearch()) {
+					throw new OptionsException("Incompatible options. Cannot use Elasticsearch and specify a json file.");
+				}
 				File jsonFile = new File(option.getValue());
 				if (jsonFile.exists() && jsonFile.isFile()) {
 					configuration.setJsonDirOrFile(jsonFile);
@@ -78,6 +86,7 @@ public class CliArgumentParser {
 	private Options getOptions() {
 		Options options = new Options();
 		options.addOption("c", true, "Continue processing even if one of the JSON configuration file is invalid.");
+		options.addOption("es", false, "Use elasticsearch to store json configuration elements. Default false.");
 		options.addOption("j", true, "Directory where json configuration is stored. Default is .");
 		options.addOption("f", true, "A single json file to execute.");
 		options.addOption("e", false, "Run endlessly. Default false.");
