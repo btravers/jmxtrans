@@ -46,7 +46,7 @@ public class BluefloodWriter extends BaseOutputWriter {
 			@JsonProperty("ttl") Integer ttl, @JsonProperty("settings") Map<String, Object> settings) {
 		super(typeNames, booleanAsNumber, debugEnabled, settings);
 
-		this.host = host;
+		this.host = MoreObjects.firstNonNull(host, (String) getSettings().get(HOST));
 		
 		if (this.host == null) {
 			throw new NullPointerException("Host cannot be null.");
@@ -54,7 +54,7 @@ public class BluefloodWriter extends BaseOutputWriter {
 		
 		this.port = MoreObjects.firstNonNull(port, Settings.getIntSetting(getSettings(), PORT, DEFAULT_PORT));
 
-		this.ttl = MoreObjects.firstNonNull(ttl, DEFAULT_TTL);
+		this.ttl = MoreObjects.firstNonNull(ttl, Settings.getIntSetting(getSettings(), TTL, DEFAULT_TTL));
 	}
 
 	public Integer getPort() {
@@ -89,7 +89,7 @@ public class BluefloodWriter extends BaseOutputWriter {
 			String body = "[";
 
 			for (Result result : results) {
-				log.info("Query result: {}", result);
+				log.debug("Query result: {}", result);
 				Map<String, Object> resultValues = result.getValues();
 				if (resultValues != null) {
 					for (Entry<String, Object> values : resultValues.entrySet()) {
@@ -100,7 +100,7 @@ public class BluefloodWriter extends BaseOutputWriter {
 
 							String line = "{ \"metricName\": \"" + name + "\", \"metricValue\": " + value + ", \"collectionTime\": " + time
 									+ ", \"ttlInSeconds\": " + this.ttl + "},";
-							log.info("Blueflood Message: {}", line);
+							log.debug("Blueflood Message: {}", line);
 							body += line;
 
 						} else {
