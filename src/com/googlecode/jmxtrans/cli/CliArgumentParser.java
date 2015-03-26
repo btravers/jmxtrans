@@ -30,7 +30,7 @@ public class CliArgumentParser {
 			} else if (option.getOpt().equals("es")) {
 				configuration.setUseElasticsearch(true);
 			} else if (option.getOpt().equals("j")) {
-				if (configuration.getUseElasticsearch()) {
+				if (configuration.isUseElasticsearch()) {
 					throw new OptionsException("Incompatible options. Cannot use Elasticsearch and specify json directory.");
 				}
 				File jsonDir = new File(option.getValue());
@@ -40,7 +40,7 @@ public class CliArgumentParser {
 					throw new OptionsException("Path to json directory is invalid: " + jsonDir);
 				}
 			} else if (option.getOpt().equals("f")) {
-				if (configuration.getUseElasticsearch()) {
+				if (configuration.isUseElasticsearch()) {
 					throw new OptionsException("Incompatible options. Cannot use Elasticsearch and specify a json file.");
 				}
 				File jsonFile = new File(option.getValue());

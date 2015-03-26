@@ -85,7 +85,9 @@ public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 		this.configurationParser = configurationParser;
 		this.injector = injector;
 		
-		this.esClient = new ElasticsearchClient();
+		if (this.configuration.isUseElasticsearch()) {
+			this.esClient = new ElasticsearchClient();
+		}
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -147,11 +149,11 @@ public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 			try {
 				this.serverScheduler.start();
 
-				this.startupSystem();
-				
-				if (!this.configuration.getUseElasticsearch()) {
+				if (!this.configuration.isUseElasticsearch()) {
 					this.startupWatchdir();
 				}
+				
+				this.startupSystem();
 
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
@@ -286,7 +288,7 @@ public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 	 */
 	private void startupSystem() throws LifecycleException {
 		// process all the json files into Server objects
-		if (this.configuration.getUseElasticsearch()) {
+		if (this.configuration.isUseElasticsearch()) {
 			this.stopWriterAndClearMasterServerList();
 			try {
 				this.masterServersList = this.esClient.getAll();

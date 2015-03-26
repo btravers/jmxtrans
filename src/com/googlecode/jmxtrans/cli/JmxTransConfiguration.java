@@ -91,7 +91,7 @@ public class JmxTransConfiguration {
 		return jsonDirOrFile;
 	}
 	
-	public boolean getUseElasticsearch() {
+	public boolean isUseElasticsearch() {
 		return useElasticsearch;
 	}
 
