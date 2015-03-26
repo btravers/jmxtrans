@@ -25,7 +25,6 @@ import com.googlecode.jmxtrans.model.Result;
 import com.googlecode.jmxtrans.model.Server;
 import com.googlecode.jmxtrans.model.ValidationException;
 import com.googlecode.jmxtrans.model.naming.KeyUtils;
-import com.googlecode.jmxtrans.model.output.GraphiteWriter.Builder;
 
 @NotThreadSafe
 public class BluefloodWriter extends BaseOutputWriter {
@@ -47,16 +46,13 @@ public class BluefloodWriter extends BaseOutputWriter {
 			@JsonProperty("ttl") Integer ttl, @JsonProperty("settings") Map<String, Object> settings) {
 		super(typeNames, booleanAsNumber, debugEnabled, settings);
 
-		this.host = MoreObjects.firstNonNull(host, (String) getSettings().get(HOST));
-		this.port = MoreObjects.firstNonNull(port, Settings.getIntSetting(getSettings(), PORT, DEFAULT_PORT));
-
+		this.host = host;
+		
 		if (this.host == null) {
 			throw new NullPointerException("Host cannot be null.");
 		}
-
-		if (this.port == null) {
-			throw new NullPointerException("Port cannot be null.");
-		}
+		
+		this.port = MoreObjects.firstNonNull(port, Settings.getIntSetting(getSettings(), PORT, DEFAULT_PORT));
 
 		this.ttl = MoreObjects.firstNonNull(ttl, DEFAULT_TTL);
 	}
@@ -77,7 +73,6 @@ public class BluefloodWriter extends BaseOutputWriter {
 
 	@Override
 	protected void internalWrite(Server server, Query query, ImmutableList<Result> results) throws Exception {
-		// TODO Auto-generated method stub
 		String url = "http://" + host + ":" + port + "/v2.0/jmx/ingest";
 
 		URL bluefloodServer = null;
@@ -146,7 +141,6 @@ public class BluefloodWriter extends BaseOutputWriter {
 		private final ImmutableList.Builder<String> typeNames = ImmutableList.builder();
 		private boolean booleanAsNumber;
 		private Boolean debugEnabled;
-		private String rootPrefix;
 		private String host;
 		private Integer port;
 		private Integer ttl;
@@ -171,11 +165,6 @@ public class BluefloodWriter extends BaseOutputWriter {
 
 		public Builder setDebugEnabled(boolean debugEnabled) {
 			this.debugEnabled = debugEnabled;
-			return this;
-		}
-
-		public Builder setRootPrefix(String rootPrefix) {
-			this.rootPrefix = rootPrefix;
 			return this;
 		}
 

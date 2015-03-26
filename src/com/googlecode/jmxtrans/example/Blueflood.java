@@ -12,11 +12,11 @@ public class Blueflood {
 	public static void main(String[] args) throws Exception {
 		printer.prettyPrint(new JmxProcess(Server
 				.builder()
-				.setHost("192.168.33.10")
+				.setHost("localhost")
 				.setPort("9991")
 				.addQuery(
 						Query.builder().setObj("java.lang:type=GarbageCollector,name=ConcurrentMarkSweep")
-								.addOutputWriter(BluefloodWriter.builder().setHost("192.168.33.12").setPort(19000).setDebugEnabled(true).build())
+								.addOutputWriter(BluefloodWriter.builder().setHost("localhost").setPort(19000).setDebugEnabled(true).build())
 								.build()).build()));
 	}
 }
