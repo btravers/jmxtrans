@@ -10,12 +10,7 @@ public class BluefloodWriterTests {
 
 	@Test(expected = NullPointerException.class)
 	public void settingsHost() throws ValidationException {
-		try {
 		BluefloodWriter writter = BluefloodWriter.builder().setPort(123).build();
-		} catch (NullPointerException npe) {
-			assertThat(npe).hasMessage("Host cannot be null.");
-			throw npe;
-		}
 	}
 	
 	@Test
