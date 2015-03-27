@@ -86,7 +86,7 @@ public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 		this.injector = injector;
 		
 		if (this.configuration.isUseElasticsearch()) {
-			this.esClient = new ElasticsearchClient();
+			this.esClient = new ElasticsearchClient(this.configuration);
 		}
 	}
 
@@ -145,11 +145,11 @@ public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 		if (isRunning) {
 			throw new LifecycleException("Process already started");
 		} else {
-			log.info("Starting Jmxtrans on : " + this.configuration.getJsonDirOrFile().toString());
 			try {
 				this.serverScheduler.start();
 
 				if (!this.configuration.isUseElasticsearch()) {
+					log.info("Starting Jmxtrans on : " + this.configuration.getJsonDirOrFile().toString());
 					this.startupWatchdir();
 				}
 				
@@ -184,8 +184,16 @@ public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 				}
 
 				this.stopServices();
+				
+				if (this.esClient != null) {
+					this.esClient.stopElasticsearchClient();
+				}
+				
 				isRunning = false;
 			} catch (LifecycleException e) {
+				log.error(e.getMessage(), e);
+				throw new LifecycleException(e);
+			} catch (IOException e) {
 				log.error(e.getMessage(), e);
 				throw new LifecycleException(e);
 			}

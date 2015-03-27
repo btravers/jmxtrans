@@ -38,7 +38,7 @@ public class CliArgumentParserTest {
 		try {
 			parseConfiguration(new String[]{""});
 		} catch (OptionsException oe) {
-			assertThat(oe.getMessage(), is("Please specify either the -f or -j option."));
+			assertThat(oe.getMessage(), is("Please specify either the -f, -j or -es option."));
 			throw oe;
 		}
 	}

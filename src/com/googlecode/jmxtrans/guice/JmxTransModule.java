@@ -12,8 +12,11 @@ import com.googlecode.jmxtrans.connections.JMXConnectionParams;
 import com.googlecode.jmxtrans.connections.JmxConnectionFactory;
 import com.googlecode.jmxtrans.connections.SocketFactory;
 import com.googlecode.jmxtrans.monitoring.ManagedGenericKeyedObjectPool;
+
 import org.apache.commons.pool.KeyedPoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
@@ -22,11 +25,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.management.remote.JMXConnector;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.DatagramSocket;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -49,6 +54,7 @@ public class JmxTransModule extends AbstractModule {
 				.toInstance(getObjectPool(new JmxConnectionFactory(), JmxConnectionFactory.class.getSimpleName()));
 		bind(new TypeLiteral<GenericKeyedObjectPool<SocketAddress, DatagramSocket>>(){})
 				.toInstance(getObjectPool(new DatagramSocketFactory(), DatagramSocketFactory.class.getSimpleName()));
+		bind(PoolingHttpClientConnectionManager.class).toInstance(new PoolingHttpClientConnectionManager());
 	}
 
 	@Provides

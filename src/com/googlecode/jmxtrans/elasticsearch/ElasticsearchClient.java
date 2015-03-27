@@ -7,9 +7,14 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.search.SearchHit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,25 +23,39 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.ImmutableList;
+import com.googlecode.jmxtrans.cli.JmxTransConfiguration;
 import com.googlecode.jmxtrans.model.JmxProcess;
 import com.googlecode.jmxtrans.model.Server;
 
 public class ElasticsearchClient extends Observable {
 	
+	private static final Logger log = LoggerFactory.getLogger(ElasticsearchClient.class);
+	
 	public final static String INDEX = ".jmxtrans";
 	public final static String TYPE = "conf";
 
-	private Node node;
+	private Client client;
 	private int id;
 	private EVENT event;
+	private ElasticsearchProperties properties;
 	
 	enum EVENT {
 		DELETE, UPDATE, ADD
 	}
 
 
-	public ElasticsearchClient() {
-		this.node = NodeBuilder.nodeBuilder().client(true).node();
+	public ElasticsearchClient(JmxTransConfiguration conf) {
+		this.properties = new ElasticsearchProperties(conf);
+		try {
+			this.properties.loadProperties();
+		} catch (IOException e) {
+			log.error("Error during elasticsearch properties loading. Use default properties instead.");
+		}
+		
+		Settings settings = ImmutableSettings.settingsBuilder()
+		        .put("cluster.name", this.properties.getCluster()).build();
+		this.client = new TransportClient(settings)
+		        .addTransportAddress(new InetSocketTransportAddress(this.properties.getHost(), this.properties.getPort()));
 	}
 
 	public int getId() {
@@ -53,7 +72,7 @@ public class ElasticsearchClient extends Observable {
 
 		String json = mapper.writeValueAsString(new JmxProcess(server));
 
-		IndexResponse response = this.node.client().prepareIndex(INDEX, TYPE).setSource(json).execute().actionGet();
+		IndexResponse response = this.client.prepareIndex(INDEX, TYPE).setSource(json).execute().actionGet();
 
 		this.id = Integer.parseInt(response.getId());
 		this.event = EVENT.ADD;
@@ -62,7 +81,7 @@ public class ElasticsearchClient extends Observable {
 	}
 
 	public ImmutableList<Server> getAll() throws JsonParseException, JsonMappingException, IOException {
-		SearchResponse response = this.node.client().prepareSearch(INDEX).setTypes(TYPE).execute().actionGet();
+		SearchResponse response = this.client.prepareSearch(INDEX).setTypes(TYPE).execute().actionGet();
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new GuavaModule());
@@ -77,7 +96,7 @@ public class ElasticsearchClient extends Observable {
 	}
 
 	public Server get(String id) throws JsonParseException, JsonMappingException, IOException {
-		GetResponse response = this.node.client().prepareGet(INDEX, TYPE, id).execute().actionGet();
+		GetResponse response = this.client.prepareGet(INDEX, TYPE, id).execute().actionGet();
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new GuavaModule());
@@ -93,7 +112,7 @@ public class ElasticsearchClient extends Observable {
 		String json = mapper.writeValueAsString(new JmxProcess(server));
 
 		UpdateRequest updateRequest = new UpdateRequest(INDEX, TYPE, id).doc(json);
-		this.node.client().update(updateRequest);
+		this.client.update(updateRequest);
 
 		this.id = Integer.parseInt(id);
 		this.event = EVENT.UPDATE;
@@ -102,7 +121,7 @@ public class ElasticsearchClient extends Observable {
 	}
 
 	public void delete(Server server, String id) {
-		this.node.client().prepareDelete(INDEX, TYPE, id).execute().actionGet();
+		this.client.prepareDelete(INDEX, TYPE, id).execute().actionGet();
 
 		this.id = Integer.parseInt(id);
 		this.event = EVENT.DELETE;
@@ -111,7 +130,7 @@ public class ElasticsearchClient extends Observable {
 	}
 
 	public void stopElasticsearchClient() throws IOException {
-		this.node.close();
+		this.client.close();
 	}
 
 }

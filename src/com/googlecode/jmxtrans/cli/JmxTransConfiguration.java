@@ -10,6 +10,7 @@ public class JmxTransConfiguration {
 	private boolean useElasticsearch = false;
 	private File jsonDirOrFile;
 	private boolean runEndlessly = false;
+	private String elasticsearchPropertiesFile = null;
 	/**
 	 * The Quartz server properties.
 	 */
@@ -80,6 +81,14 @@ public class JmxTransConfiguration {
 	 */
 	public void setRunPeriod(int runPeriod) {
 		this.runPeriod = runPeriod;
+	}
+	
+	public void setElasticsearchPropertiesFile(String elasticsearchPropertiesFile) {
+		this.elasticsearchPropertiesFile = elasticsearchPropertiesFile;
+	}
+	
+	public String getElasticsearchPropertiesFile() {
+		return this.elasticsearchPropertiesFile;
 	}
 
 	/**

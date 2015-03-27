@@ -29,6 +29,15 @@ public class CliArgumentParser {
 				configuration.setContinueOnJsonError(Boolean.parseBoolean(option.getValue()));
 			} else if (option.getOpt().equals("es")) {
 				configuration.setUseElasticsearch(true);
+			} else if (option.getOpt().equals("esfile")) {
+				configuration.setUseElasticsearch(true);
+				File file = new File(option.getValue());
+				if (file.exists() && file.isDirectory()) {
+					configuration.setElasticsearchPropertiesFile(option.getValue());
+					;
+				} else {
+					throw new OptionsException("Path to json directory is invalid: " + file);
+				}
 			} else if (option.getOpt().equals("j")) {
 				if (configuration.isUseElasticsearch()) {
 					throw new OptionsException("Incompatible options. Cannot use Elasticsearch and specify json directory.");
@@ -56,8 +65,7 @@ public class CliArgumentParser {
 				if (quartzConfigFile.exists() && quartzConfigFile.isFile()) {
 					configuration.setQuartPropertiesFile(option.getValue());
 				} else {
-					throw new OptionsException("Could not find path to the quartz properties file: "
-							+ quartzConfigFile.getAbsolutePath());
+					throw new OptionsException("Could not find path to the quartz properties file: " + quartzConfigFile.getAbsolutePath());
 				}
 			} else if (option.getOpt().equals("s")) {
 				try {
@@ -77,8 +85,8 @@ public class CliArgumentParser {
 				configuration.setHelp(true);
 			}
 		}
-		if ((!configuration.isHelp()) && (configuration.getJsonDirOrFile() == null)) {
-			throw new OptionsException("Please specify either the -f or -j option.");
+		if ((!configuration.isHelp()) && (configuration.getJsonDirOrFile() == null) && (!configuration.isUseElasticsearch())) {
+			throw new OptionsException("Please specify either the -f, -j or -es option.");
 		}
 		return configuration;
 	}
@@ -87,18 +95,15 @@ public class CliArgumentParser {
 		Options options = new Options();
 		options.addOption("c", true, "Continue processing even if one of the JSON configuration file is invalid.");
 		options.addOption("es", false, "Use elasticsearch to store json configuration elements. Default false.");
+		options.addOption("esfile", true,
+				"Use elasticsearch to store json configuration elements and specify elasticsearch properties file location. Default is .");
 		options.addOption("j", true, "Directory where json configuration is stored. Default is .");
 		options.addOption("f", true, "A single json file to execute.");
 		options.addOption("e", false, "Run endlessly. Default false.");
 		options.addOption("q", true, "Path to quartz configuration file.");
 		options.addOption("s", true, "Seconds between server job runs (not defined with cron). Default: 60");
-		options.addOption(OptionBuilder
-				.withArgName("a")
-				.withLongOpt("additionalJars")
-				.hasArgs()
-				.withValueSeparator(',')
-				.withDescription("Coma delimited list of additional jars to add to the class path")
-				.create("a"));
+		options.addOption(OptionBuilder.withArgName("a").withLongOpt("additionalJars").hasArgs().withValueSeparator(',')
+				.withDescription("Coma delimited list of additional jars to add to the class path").create("a"));
 		options.addOption("h", false, "Help");
 		return options;
 	}
