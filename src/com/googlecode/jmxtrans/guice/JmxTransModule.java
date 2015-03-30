@@ -15,6 +15,7 @@ import com.googlecode.jmxtrans.monitoring.ManagedGenericKeyedObjectPool;
 
 import org.apache.commons.pool.KeyedPoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -52,7 +53,7 @@ public class JmxTransModule extends AbstractModule {
 				.toInstance(getObjectPool(new JmxConnectionFactory(), JmxConnectionFactory.class.getSimpleName()));
 		bind(new TypeLiteral<GenericKeyedObjectPool<SocketAddress, DatagramSocket>>(){})
 				.toInstance(getObjectPool(new DatagramSocketFactory(), DatagramSocketFactory.class.getSimpleName()));
-		bind(PoolingHttpClientConnectionManager.class).toInstance(new PoolingHttpClientConnectionManager());
+		bind(HttpClientConnectionManager.class).toInstance(new PoolingHttpClientConnectionManager());
 	}
 
 	@Provides

@@ -1,23 +1,17 @@
 package com.googlecode.jmxtrans.model.output;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Scanner;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +40,8 @@ public class BluefloodWriter extends BaseOutputWriter {
 	private final Integer port;
 	private final Integer ttl;
 
-	private PoolingHttpClientConnectionManager pool;
+	private HttpClientBuilder clientBuilder;
+	private HttpClientConnectionManager pool;
 
 	@JsonCreator
 	public BluefloodWriter(@JsonProperty("typeNames") ImmutableList<String> typeNames, @JsonProperty("booleanAsNumber") boolean booleanAsNumber,
@@ -83,9 +78,17 @@ public class BluefloodWriter extends BaseOutputWriter {
 	protected void internalWrite(Server server, Query query, ImmutableList<Result> results) throws Exception {
 		String url = "http://" + host + ":" + port + "/v2.0/jmx/ingest";
 
-		CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(this.pool).build();
+		HttpClient httpClient = this.clientBuilder.build();
 		HttpPost request = new HttpPost(url);
 
+		String body = this.bodyRequest(server, query, results);
+		StringEntity params = new StringEntity(body);
+		request.addHeader("content-type", "application/x-www-form-urlencoded");
+		request.setEntity(params);
+		httpClient.execute(request);
+	}
+	
+	public String bodyRequest(Server server, Query query, ImmutableList<Result> results) {
 		String body = "[";
 
 		for (Result result : results) {
@@ -94,7 +97,7 @@ public class BluefloodWriter extends BaseOutputWriter {
 			if (resultValues != null) {
 				for (Entry<String, Object> values : resultValues.entrySet()) {
 					if (NumberUtils.isNumeric(values.getValue())) {
-						String name = KeyUtils.getKeyString(query, result, values, getTypeNames());
+						String name = KeyUtils.getKeyString(server, query, result, values, getTypeNames(), null);
 						String value = values.getValue().toString();
 						long time = result.getEpoch();
 
@@ -114,16 +117,14 @@ public class BluefloodWriter extends BaseOutputWriter {
 			body = body.substring(0, body.length() - 1);
 		}
 		body += "]";
-
-		StringEntity params = new StringEntity(body);
-		request.addHeader("content-type", "application/x-www-form-urlencoded");
-		request.setEntity(params);
-		httpClient.execute(request);
+		
+		return body;
 	}
 
 	@Inject
-	public void setPool(PoolingHttpClientConnectionManager pool) {
+	public void setPool(HttpClientConnectionManager pool) {
 		this.pool = pool;
+		this.clientBuilder = HttpClients.custom().setConnectionManager(this.pool);
 	}
 
 	public static Builder builder() {
