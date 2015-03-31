@@ -32,11 +32,10 @@ public class CliArgumentParser {
 			} else if (option.getOpt().equals("esfile")) {
 				configuration.setUseElasticsearch(true);
 				File file = new File(option.getValue());
-				if (file.exists() && file.isDirectory()) {
-					configuration.setElasticsearchPropertiesFile(option.getValue());
-					;
+				if (file.exists() && file.isFile()) {
+					configuration.setElasticsearchPropertiesFile(file);
 				} else {
-					throw new OptionsException("Path to json directory is invalid: " + file);
+					throw new OptionsException("Path to elasticsearch config file is invalid: " + file);
 				}
 			} else if (option.getOpt().equals("j")) {
 				if (configuration.isUseElasticsearch()) {

@@ -52,6 +52,8 @@ public class ElasticsearchClient extends Observable {
 			log.error("Error during elasticsearch properties loading. Use default properties instead.");
 		}
 		
+		log.info("ElasticsearchProperties: [" + this.properties.getHost() + ":" + this.properties.getPort() + "]");
+		
 		Settings settings = ImmutableSettings.settingsBuilder()
 		        .put("cluster.name", this.properties.getCluster()).build();
 		this.client = new TransportClient(settings)
