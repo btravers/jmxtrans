@@ -1,7 +1,5 @@
 package com.googlecode.jmxtrans.elasticsearch;
 
-import java.util.Map;
-
 import com.googlecode.jmxtrans.cli.JmxTransConfiguration;
 
 public class ElasticsearchProperties {

@@ -125,7 +125,14 @@ public class JmxTransformer implements WatchedCallback {
 			// process message
 			// TODO : Make something here, maybe watch for files?
 			try {
-				Thread.sleep(5);
+				if (this.configuration.isUseElasticsearch()) {
+					if (this.esClient.reloadConf()) {
+						Thread.sleep(1000);
+						this.deleteAllJobs();
+						this.startupSystem();
+					}
+				}
+				Thread.sleep(1000);
 			} catch (Exception e) {
 				break;
 			}

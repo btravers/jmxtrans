@@ -7,7 +7,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +32,8 @@ public class ElasticsearchClient extends Observable {
 
 	private Client client;
 	private ElasticsearchProperties properties;
+	private long timestamp;
+	private int size;
 
 	enum EVENT {
 		DELETE, UPDATE, ADD
@@ -40,6 +45,9 @@ public class ElasticsearchClient extends Observable {
 		log.info("ElasticsearchProperties: [" + this.properties.getHost() + ":" + this.properties.getPort() + "]");
 
 		this.client = new TransportClient().addTransportAddress(new InetSocketTransportAddress(this.properties.getHost(), this.properties.getPort()));
+		
+		// Initilization of timestamp and size using reloadConf method
+		this.reloadConf();
 	}
 
 	public ImmutableList<Server> getAll() throws JsonParseException, JsonMappingException, IOException {
@@ -55,6 +63,34 @@ public class ElasticsearchClient extends Observable {
 		}
 
 		return builder.build();
+	}
+
+	public boolean reloadConf() {
+		SearchResponse response = this.client.prepareSearch(INDEX).setTypes(TYPE).setQuery(QueryBuilders.matchAllQuery())
+				.addAggregation(AggregationBuilders.terms("agg").field("_timestamp").order(Terms.Order.term(false))).execute().actionGet();
+
+		Terms agg = response.getAggregations().get("agg");
+
+		if (agg.getBuckets().size() == 0) {
+			if (this.size == 0) {
+				return false;
+			}
+			this.size = 0;
+			return true;
+		}
+		
+		if (agg.getBuckets().size() != this.size) {
+			this.size = agg.getBuckets().size();
+			this.timestamp = Long.parseLong(agg.getBuckets().get(0).getKey());
+			return true;
+		}
+		
+		if (this.timestamp < Long.parseLong(agg.getBuckets().get(0).getKey())) {
+			this.timestamp = Long.parseLong(agg.getBuckets().get(0).getKey());
+			return true;
+		}
+
+		return false;
 	}
 
 	public void stopElasticsearchClient() throws IOException {
