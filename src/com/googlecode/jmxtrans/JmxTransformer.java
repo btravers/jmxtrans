@@ -127,12 +127,11 @@ public class JmxTransformer implements WatchedCallback {
 			try {
 				if (this.configuration.isUseElasticsearch()) {
 					if (this.esClient.reloadConf()) {
-						Thread.sleep(1000);
 						this.deleteAllJobs();
 						this.startupSystem();
 					}
 				}
-				Thread.sleep(1000);
+				Thread.sleep(60000);
 			} catch (Exception e) {
 				break;
 			}

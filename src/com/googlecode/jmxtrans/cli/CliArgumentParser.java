@@ -87,7 +87,7 @@ public class CliArgumentParser {
 	private Options getOptions() {
 		Options options = new Options();
 		options.addOption("c", true, "Continue processing even if one of the JSON configuration file is invalid.");
-		options.addOption("es", true, "Use elasticsearch to store json configuration elements. Default false. Can specify elasticsearch host and port separating its with :");
+		options.addOption("es", true, "Use elasticsearch instead of files to store/read json configuration elements, specify elasticsearch host and port separating its with :");
 		options.addOption("j", true, "Directory where json configuration is stored. Default is .");
 		options.addOption("f", true, "A single json file to execute.");
 		options.addOption("e", false, "Run endlessly. Default false.");
