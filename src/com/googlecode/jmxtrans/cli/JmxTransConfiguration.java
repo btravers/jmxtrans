@@ -8,9 +8,9 @@ import java.util.List;
 public class JmxTransConfiguration {
 	private boolean continueOnJsonError = false;
 	private boolean useElasticsearch = false;
+	private String elasticsearchHost;
 	private File jsonDirOrFile;
 	private boolean runEndlessly = false;
-	private File elasticsearchPropertiesFile = null;
 	/**
 	 * The Quartz server properties.
 	 */
@@ -22,6 +22,18 @@ public class JmxTransConfiguration {
 	private boolean help = false;
 
 	private List<File> additionalJars = ImmutableList.of();
+	
+	
+
+	public String getElasticsearchHost() {
+		return elasticsearchHost;
+	}
+
+
+	public void setElasticsearchHost(String elasticsearchHost) {
+		this.elasticsearchHost = elasticsearchHost;
+	}
+
 
 	/**
 	 * If it is false, then JmxTrans will stop when one of the JSON
@@ -81,14 +93,6 @@ public class JmxTransConfiguration {
 	 */
 	public void setRunPeriod(int runPeriod) {
 		this.runPeriod = runPeriod;
-	}
-	
-	public void setElasticsearchPropertiesFile(File elasticsearchPropertiesFile) {
-		this.elasticsearchPropertiesFile = elasticsearchPropertiesFile;
-	}
-	
-	public File getElasticsearchPropertiesFile() {
-		return this.elasticsearchPropertiesFile;
 	}
 
 	/**

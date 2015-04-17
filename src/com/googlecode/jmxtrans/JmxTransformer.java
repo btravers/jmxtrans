@@ -7,7 +7,6 @@ import com.google.inject.Injector;
 import com.googlecode.jmxtrans.classloader.ClassLoaderEnricher;
 import com.googlecode.jmxtrans.cli.CliArgumentParser;
 import com.googlecode.jmxtrans.cli.JmxTransConfiguration;
-import com.googlecode.jmxtrans.elasticsearch.ElasticsearchCallback;
 import com.googlecode.jmxtrans.elasticsearch.ElasticsearchClient;
 import com.googlecode.jmxtrans.exceptions.LifecycleException;
 import com.googlecode.jmxtrans.guice.JmxTransModule;
@@ -53,7 +52,7 @@ import java.util.List;
  *
  * @author jon
  */
-public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
+public class JmxTransformer implements WatchedCallback {
 
 	private static final Logger log = LoggerFactory.getLogger(JmxTransformer.class);
 
@@ -499,26 +498,5 @@ public class JmxTransformer implements WatchedCallback, ElasticsearchCallback {
 				log.error("Error shutdown hook", e);
 			}
 		}
-	}
-
-	@Override
-	public void serverModified(int id) throws Exception {
-		Thread.sleep(1000);
-		this.deleteAllJobs();
-		this.startupSystem();
-	}
-
-	@Override
-	public void serverDeleted(int id) throws Exception {
-		Thread.sleep(1000);
-		this.deleteAllJobs();
-		this.startupSystem();
-	}
-
-	@Override
-	public void serverAdded(int id) throws Exception {
-		Thread.sleep(1000);
-		this.deleteAllJobs();
-		this.startupSystem();
 	}
 }

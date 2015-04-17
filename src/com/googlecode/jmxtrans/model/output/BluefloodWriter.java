@@ -45,9 +45,13 @@ public class BluefloodWriter extends BaseOutputWriter {
 	private HttpClientConnectionManager pool;
 
 	@JsonCreator
-	public BluefloodWriter(@JsonProperty("typeNames") ImmutableList<String> typeNames, @JsonProperty("booleanAsNumber") boolean booleanAsNumber,
-			@JsonProperty("debug") Boolean debugEnabled, @JsonProperty("host") String host, @JsonProperty("port") Integer port,
-			@JsonProperty("ttl") Integer ttl, @JsonProperty("settings") Map<String, Object> settings) {
+	public BluefloodWriter(	@JsonProperty("typeNames") ImmutableList<String> typeNames, 
+							@JsonProperty("booleanAsNumber") boolean booleanAsNumber,
+							@JsonProperty("debug") Boolean debugEnabled, 
+							@JsonProperty("host") String host, 
+							@JsonProperty("port") Integer port,
+							@JsonProperty("ttl") Integer ttl, 
+							@JsonProperty("settings") Map<String, Object> settings) {
 		super(typeNames, booleanAsNumber, debugEnabled, settings);
 
 		this.host = MoreObjects.firstNonNull(host, (String) getSettings().get(HOST));

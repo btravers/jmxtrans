@@ -25,18 +25,12 @@ public class CliArgumentParser {
 		JmxTransConfiguration configuration = new JmxTransConfiguration();
 
 		for (Option option : options) {
+			
 			if (option.getOpt().equals("c")) {
 				configuration.setContinueOnJsonError(Boolean.parseBoolean(option.getValue()));
 			} else if (option.getOpt().equals("es")) {
 				configuration.setUseElasticsearch(true);
-			} else if (option.getOpt().equals("esfile")) {
-				configuration.setUseElasticsearch(true);
-				File file = new File(option.getValue());
-				if (file.exists() && file.isFile()) {
-					configuration.setElasticsearchPropertiesFile(file);
-				} else {
-					throw new OptionsException("Path to elasticsearch config file is invalid: " + file);
-				}
+				configuration.setElasticsearchHost(option.getValue());
 			} else if (option.getOpt().equals("j")) {
 				if (configuration.isUseElasticsearch()) {
 					throw new OptionsException("Incompatible options. Cannot use Elasticsearch and specify json directory.");
@@ -93,9 +87,7 @@ public class CliArgumentParser {
 	private Options getOptions() {
 		Options options = new Options();
 		options.addOption("c", true, "Continue processing even if one of the JSON configuration file is invalid.");
-		options.addOption("es", false, "Use elasticsearch to store json configuration elements. Default false.");
-		options.addOption("esfile", true,
-				"Use elasticsearch to store json configuration elements and specify elasticsearch properties file location. Default is .");
+		options.addOption("es", true, "Use elasticsearch to store json configuration elements. Default false. Can specify elasticsearch host and port separating its with :");
 		options.addOption("j", true, "Directory where json configuration is stored. Default is .");
 		options.addOption("f", true, "A single json file to execute.");
 		options.addOption("e", false, "Run endlessly. Default false.");
