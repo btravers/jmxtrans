@@ -5,6 +5,10 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jmxtrans/jmxtrans?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Maven site](https://img.shields.io/badge/Maven-site-blue.svg)](http://www.jmxtrans.org/jmxtrans/)
 
+> This project is a fork of jmxtrans project.
+> It provides two new features: a writer for Blueflood and the use of elasticsearch for storing data.
+> In order to run jmxtrans with data stored in an elasticsearch cluster, you need to specify the argument -es and you can add the location of your cluster specifying the host name and the port.
+
 This is the source code repository for the jmxtrans project.
 
 This is effectively the missing connector between speaking to a JVM via JMX on one end and whatever logging / monitoring / graphing package that you can dream up on the other end.
