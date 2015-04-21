@@ -51,7 +51,7 @@ public class ElasticsearchClient extends Observable {
 	}
 
 	public ImmutableList<Server> getAll() throws JsonParseException, JsonMappingException, IOException {
-		SearchResponse response = this.client.prepareSearch(INDEX).setTypes(TYPE).execute().actionGet();
+		SearchResponse response = this.client.prepareSearch(INDEX).setTypes(TYPE).setSize(Integer.MAX_VALUE).execute().actionGet();
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new GuavaModule());
