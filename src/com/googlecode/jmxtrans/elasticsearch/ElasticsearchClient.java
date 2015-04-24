@@ -67,7 +67,7 @@ public class ElasticsearchClient extends Observable {
 
 	public boolean reloadConf() {
 		SearchResponse response = this.client.prepareSearch(INDEX).setTypes(TYPE).setQuery(QueryBuilders.matchAllQuery())
-				.addAggregation(AggregationBuilders.terms("agg").field("_timestamp").order(Terms.Order.term(false))).execute().actionGet();
+				.addAggregation(AggregationBuilders.terms("agg").field("_timestamp").size(0).order(Terms.Order.term(false))).execute().actionGet();
 
 		Terms agg = response.getAggregations().get("agg");
 
